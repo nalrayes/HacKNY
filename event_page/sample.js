@@ -238,15 +238,16 @@ var GoogleNatLangAPIBaseURL = "https://language.googleapis.com/v1beta1/documents
 
 function onClickHandler(info, tab) {
 	currentURL = info.linkUrl;
+    unshorten_url(currentURL, console.log()); 
 	if (currentURL.includes("http://")) {
 		console.log("working");
 		currentURL = currentURL.replace("http://","http\\:\\/\\/");
-	}
-	else if (currentURL.includes("https://")){
+	}   else if (currentURL.includes("https://")){
 		currentURL = currentURL.replace("https://","https\\:\\/\\/");
 	}
 	
 	WebhoseURL1 = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
+    console.log('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
 	httpGetArticleTitle(WebhoseURL1,getKeywords);	
 	
 	WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=united%20states%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
@@ -358,10 +359,30 @@ function httpGetFiveArticlesFromSearchTerms(theUrl){
             console.log("RESULTS FROM SEARCH TERM:")
 			//console.log(jsonResponse);
             console.log(articles);
-
         }
     };
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send();
+
+}
+
+function unshorten_url(url, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
+            jsonResponse = JSON.parse(xmlHttp.responseText);
+            if (jsonResponse.status_code == 301) {
+                callback(unshorten_url(jsonResponse.redirect_destination))
+            } else if (jsonResponse.status_code == 200) {
+                if (jsonResponse.body.contains_meta_redirect) {
+                    callback(jsonResponse.body.meta_redirect_destintation)
+                } else {
+                    callback(url)
+                }
+            }
+        }
+    };
+    xmlHttp.open("GET", url, true); // true for asynchronous 
     xmlHttp.send();
 }
 
