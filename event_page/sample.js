@@ -33,12 +33,12 @@ function onClickHandler(info, tab) {
 		currentURL = currentURL.replace("https://","https\\:\\/\\/");
 	}
 	
-	WebhoseAPIKey = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
-	httpGetArticleTitle(WebhoseAPIKey,getKeywords);	
+	WebhoseURL1 = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
+	httpGetArticleTitle(WebhoseURL1,getKeywords);	
 	
-	WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.title%3A(syria%20%trump)%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
+	WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=united%20states%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
 	
-	//httpGetFiveArticlesFromSearchTerms(WebhoseAPIEndpoint);
+	// httpGetFiveArticlesFromSearchTerms(WebhoseAPIEndpoint);
 }
 
 chrome.contextMenus.onClicked.addListener(onClickHandler);
@@ -53,7 +53,7 @@ chrome.runtime.onInstalled.addListener(function() {
     //getKeywords();
 });
 
-function getKeywords(title) {
+function getKeywords(title, callback) {
     xhr = new XMLHttpRequest();
     xhr.open("POST", GoogleNatLangAPIBaseURL, true);
     xhr.setRequestHeader("Content-type", "application/json");
@@ -63,10 +63,30 @@ function getKeywords(title) {
             console.log(json);
 			var searchTerms = [];
 			var item;
+            var numwords = 0;
 			for (item = 0; item < json.entities.length; item++) {
-				searchTerms.push(json.entities[item]['name'].replace(" ", "%20"));
+                var entity = json.entities[item]['name'].split(" ");
+                var i;
+                for (i = 0; i < entity.length; i++) {
+                    searchTerms.push(entity[i]);
+                    numwords ++;
+                    if (numwords == 3)
+                        break;
+                }
+                if (numwords == 3)
+                    break;
+				// searchTerms.push(json.entities[item]['name']);
 			}
 			console.log(searchTerms);
+
+            var term = searchTerms.join(' ');
+            console.log("Term: "+term);  
+
+            var endpoint = 'http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=' + encodeURIComponent(term) + '%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy';
+            console.log(endpoint)
+
+            callback(endpoint);
+                
         }
     }
     var data = JSON.stringify({
@@ -91,7 +111,7 @@ function httpGetArticleTitle(theUrl, callback)
         if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
 			jsonResponse = JSON.parse(xmlHttp.responseText);
 			title = jsonResponse['posts'][0]['thread']['title'];
-			callback(title);
+			callback(title, httpGetFiveArticlesFromSearchTerms);
 		}
     };
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
@@ -105,8 +125,10 @@ function httpGetFiveArticlesFromSearchTerms(theUrl){
 			jsonResponse = JSON.parse(xmlHttp.responseText);
 			// Logic for selecting 5 articles
 			// We will have a json object of lots of different articles
-			console.log("RESULTS FROM SEARCH TERMS: " + jsonResponse);
-		}
+            console.log("RESULTS FROM SEARCH TERM:")
+			console.log(jsonResponse);
+
+        }
     };
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
     xmlHttp.send();
