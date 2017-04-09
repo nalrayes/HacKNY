@@ -234,11 +234,39 @@ var json = {
 
 var GoogleNatLangAPIKey = "AIzaSyDhbtlZtzf7AdRfMjntRCGTCsvYgFBog8g";
 var GoogleNatLangAPIBaseURL = "https://language.googleapis.com/v1beta1/documents:analyzeEntities?key=" + "AIzaSyDhbtlZtzf7AdRfMjntRCGTCsvYgFBog8g";
-
+    // function unshorten_callback(url) {
+    //     url 
+    // }
+function unshorten_url(theUrl, callback) {
+    var xmlHttp = new XMLHttpRequest();
+    console.log(theUrl); 
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+            jsonResponse = JSON.parse(xmlHttp.responseText);
+            console.log("in unshorten");
+            callback(jsonResponse[resolved_url]);
+            }
+    };
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
 
 function onClickHandler(info, tab) {
 	currentURL = info.linkUrl;
-    unshorten_url(currentURL, console.log()); 
+
+    // for url unshortener
+    if (currentURL.includes("http://")) {
+        currentURL = currentURL.replace("http://","");
+    } else if (currentURL.includes("https://")){
+        currentURL = currentURL.replace("https://","");
+    }
+
+    var unshorten = "https://unshorten.me/json/" + currentURL;
+
+    unshorten_url(unshorten, console.log);
+// }
+
+// function unshorten_callback(currentURL) {
 	if (currentURL.includes("http://")) {
 		console.log("working");
 		currentURL = currentURL.replace("http://","http\\:\\/\\/");
@@ -366,25 +394,6 @@ function httpGetFiveArticlesFromSearchTerms(theUrl){
 
 }
 
-function unshorten_url(url, callback) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
-            jsonResponse = JSON.parse(xmlHttp.responseText);
-            if (jsonResponse.status_code == 301) {
-                callback(unshorten_url(jsonResponse.redirect_destination))
-            } else if (jsonResponse.status_code == 200) {
-                if (jsonResponse.body.contains_meta_redirect) {
-                    callback(jsonResponse.body.meta_redirect_destintation)
-                } else {
-                    callback(url)
-                }
-            }
-        }
-    };
-    xmlHttp.open("GET", url, true); // true for asynchronous 
-    xmlHttp.send();
-}
 
 
 

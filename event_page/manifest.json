@@ -2,10 +2,10 @@
   "name": "HackNY",
   "description": "Click link to get more news",
   "version": "0.7",
-  "permissions": ["contextMenus"],
+  "permissions": [ "contextMenus"],
   "background": {
     "persistent": false,
-    "scripts": ["sample.js"]
+    "scripts": ["jquery-3.2.0.js","sample.js"]
   },
   "manifest_version": 2
 }
