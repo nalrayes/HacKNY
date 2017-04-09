@@ -25,7 +25,11 @@ function onClickHandler(info, tab) {
 	}
 	
 	WebhoseAPIKey = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
-	httpGetAsync(WebhoseAPIKey);	
+	httpGetArticleTitle(WebhoseAPIKey);	
+	
+	WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.title%3A(syria%20%trump)%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
+	
+	httpGetFiveArticlesFromSearchTerms(WebhoseAPIEndpoint);
 }
 
 chrome.contextMenus.onClicked.addListener(onClickHandler);
@@ -40,14 +44,28 @@ chrome.runtime.onInstalled.addListener(function() {
 
 
 // Basic HTTPGetAsyncMethod
-function httpGetAsync(theUrl, callback)
+function httpGetArticleTitle(theUrl)
 {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.onreadystatechange = function() { 
         if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
 			jsonResponse = JSON.parse(xmlHttp.responseText);
 			title = jsonResponse['posts'][0]['thread']['title'];
-			callback(title);
+			//callback(title);
+		}
+    };
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send();
+}
+
+function httpGetFiveArticlesFromSearchTerms(theUrl){
+	var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
+			jsonResponse = JSON.parse(xmlHttp.responseText);
+			// Logic for selecting 5 articles
+			// We will have a json object of lots of different articles
+			console.log("RESULTS FROM SEARCH TERMS: " + jsonResponse);
 		}
     };
     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
