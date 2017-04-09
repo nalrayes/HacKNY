@@ -1,0 +1,63 @@
+@charset "utf-8";
+/* CSS Document */
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,800');
+
+body {
+	width: 600px;
+	height: 150px;;
+}
+
+#linksContainer {
+	display: flex;
+	flex-direction: row;
+	margin:0;
+	padding:0;
+}
+
+.link {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	width: 120px;
+	height:150px;
+}
+
+.link a {
+	font-family: 'Open Sans', sans-serif;	
+	font-weight: 800;
+	text-decoration: none;
+	color: black;
+}
+
+.link a p {
+	font-family: 'Open Sans', sans-serif;	
+	font-weight: 800;
+	text-decoration: none;
+	color: black;
+	margin-bottom: 5px;
+	padding:0;
+}
+
+.link a div {
+	width: 100xp;
+	height: 100px;
+	padding-bottom: 5px;
+	display: flex;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+}
+
+.link a div img {
+	width:100px;
+	height:auto;
+}
+
+
+.link p {
+	font-family: 'Open Sans', sans-serif;
+	font-weight: 400;
+	margin:0;
+	padding:0;
+}
