@@ -4,6 +4,10 @@
 //
 function changeInfo(arrayOfImageSRCs, arrayOfSiteNames, arrayOfLinks){
 	var links = [];
+	for (var i=0; i<arrayOfLinks.length; i++)	{
+
+		console.log(arrayOfLinks[i]);	
+	}
 	
 	links.push(document.getElementById("link1").firstElementChild);
 	links.push(document.getElementById("link2").firstElementChild);
