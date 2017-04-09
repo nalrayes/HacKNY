@@ -4,8 +4,7 @@ chrome.runtime.onMessage.addListener(
     if( request.message === "clicked_browser_action" ) {
       if ($("a[href^='http']").length>5)	{
 
-      	var i;
-      	var firstHref=new Array(5);
+      	var i, firstHref=new Array(5);
       	for (i=0; i<5; i++)	{
 
       		firstHref[i]=($("a[href^='http']").eq(i).attr("href"));
