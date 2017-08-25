@@ -1,34 +1,54 @@
 // JavaScript Document
+chrome.runtime.sendMessage({
+		greeting: "Hello!"
+	}, function (response)	{
+});
 
-// Modifies the window to show the 5 images, site names, and properly link
-//
-function changeInfo(arrayOfImageSRCs, arrayOfSiteNames, arrayOfLinks){
-	var links = [];
-	for (var i=0; i<arrayOfLinks.length; i++)	{
+// Modifies the window to show images and site names and to create proper links to found articles
+function changeInfo(arrayOfObjects)	{	
+	
+	var flag = false;
 
-		console.log(arrayOfLinks[i]);	
+	for (var i = 0; i < arrayOfObjects.length; i++)		{
+
+		var bias = arrayOfObjects[i].bias;
+		var img = bias.concat("img");
+		var site = bias.concat("site");
+		var biasElement = document.getElementById(bias);
+		flag = true;
+
+		biasElement.setAttribute("href", arrayOfObjects[i]["link"]);
+		biasElement.style.display="flex";
+		biasElement.style.cursor = "pointer";
+		document.getElementById(img).src = arrayOfObjects[i]["image"];
+		document.getElementById(site).innerHTML = arrayOfObjects[i]["sitename"];				
 	}
-	
-	links.push(document.getElementById("link1").firstElementChild);
-	links.push(document.getElementById("link2").firstElementChild);
-	links.push(document.getElementById("link3").firstElementChild);
-	links.push(document.getElementById("link4").firstElementChild);
-	links.push(document.getElementById("link5").firstElementChild);
-	
-	for (var i = 0; i < 5; i++){
-		links[i].setAttribute("href", arrayOfLinks[i]);
-		links[i].children[0].firstElementChild.setAttribute("src", arrayOfImageSRCs[i]);
-		links[i].children[1].textContent = arrayOfSiteNames[i];
+		
+	// If there are no results return appropriate message
+	if (!flag)	{
+
+		var loadingimg = document.getElementById("loadingimg");
+		loadingimg.src="noresults.png";
+		loadingimg.style.width = "200px";
+		document.getElementById("explanation").innerHTML = "Sorry, no alternative sources were found for this article."
 	}
+
+	else document.getElementById("loading").style.display="none";
 }
 
 // Receives message from sample.JS when 5 sources have been loaded and modifies the page accordingly.
-//
 chrome.runtime.onMessage.addListener(function (msg, sender) {
   // First, validate the message's structure
   if ((msg.from === 'sample') && (msg.subject === 'changeInfo')) {
     // Enable the page-action for the requesting tab
-	console.log("working");
-    changeInfo(msg.imageArray, msg.siteNameArray, msg.linkArray);
+    changeInfo(msg.objArray);
   }
+});
+
+// Open any of the alternative sources
+$(document).ready(function()	{
+
+	$(".link" ).click( function()	{
+		window.open($(this).attr('href'), '_blank'); 
+	});
 });

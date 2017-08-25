@@ -1,15 +1,16 @@
+
 var jsonResponse;
 var title;
 var currentURL;
-
+ 
 var hasJSONArrived = false;
-var WebhoseAPIKey = "58b8f3b8-5631-4a3d-93fd-83bdd4e83155";
-
+var WebhoseAPIKey = "9f4c7b0b-3764-4fff-b2a4-780052f416d5";
+ 
 var WebhoseAPISearchURL = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
-
+ 
 var GoogleNatLangAPIKey = "AIzaSyDhbtlZtzf7AdRfMjntRCGTCsvYgFBog8g";
 var GoogleNatLangAPIBaseURL = "https://language.googleapis.com/v1beta1/documents:analyzeEntities?key=" + "AIzaSyDhbtlZtzf7AdRfMjntRCGTCsvYgFBog8g";
-
+ 
 var json = {
    "motherjones.com":"left",
    "chicago.suntimes.com":"leftl",
@@ -218,42 +219,48 @@ var json = {
    "washingtonexaminer.com":"right"
 };
 
-function onClickHandler(info, tab) {
-	currentURL = info.linkUrl;
-	if (currentURL.includes("http://")) {
-		console.log("working");
-		currentURL = currentURL.replace("http://","http\\:\\/\\/");
-	}
-	else if (currentURL.includes("https://")){
-		currentURL = currentURL.replace("https://","https\\:\\/\\/");
-	}
-	
-	WebhoseURL1 = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
-    console.log('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
-    httpGetArticleTitle(WebhoseURL1,getKeywords);   
-    
-    WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=united%20states%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
-    
-	// SHOW DISPLAY BOX
-	//
-}
-
-chrome.contextMenus.onClicked.addListener(onClickHandler);
-
-// Set up context menu tree at install time.
-chrome.runtime.onInstalled.addListener(function() {
-    var title = "Test link ayy menu item";
-    var id = chrome.contextMenus.create({"title": title, "contexts":["link"],"id": "contextlinkayy"});
+// If communication between linksPopUp.js and sample.js is established, start executing the script!
+chrome.runtime.onMessage.addListener(
+    function(request, sender,sendResponse) {
+        if (request.greeting=="Hello!") 
+            sendResponse({
+                msg: "Started executing!"
+            });
+            onLoadHandler();
 });
 
+// This function is called as soon as communication is established between linksPopUp.js and sample.js
+// Finds the current tab and passes it to URL Retrieval function
+function onLoadHandler() {
+  chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, onRetrieveURL);
+}
+
+// Retrieves the URL of the most recent active tab
+function onRetrieveURL(tabs) {
+  var currentURL = tabs[0].url;
+  currentURL = currentURL.split(".html")[0] + ".html";
+
+  if (currentURL.includes("http://")) {
+        currentURL = currentURL.replace("http://","http\\:\\/\\/");
+  }
+    else if (currentURL.includes("https://")){
+        currentURL = currentURL.replace("https://","https\\:\\/\\/");
+  }
+   
+  WebhoseURL1 = new String('https://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=thread.url:' + currentURL);
+  httpGetArticleTitle(WebhoseURL1,getKeywords);  
+ 
+  WebhoseAPIEndpoint = new String('http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=united%20states%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy');
+}
+ 
+// Analyze the title of the current article and obtain at most 3 keywords - search terms for alternative sources
 function getKeywords(title, callback) {
     xhr = new XMLHttpRequest();
     xhr.open("POST", GoogleNatLangAPIBaseURL, true);
     xhr.setRequestHeader("Content-type", "application/json");
-    xhr.onreadystatechange = function () { 
+    xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
             var json = JSON.parse(xhr.responseText);
-            console.log(json);
             var searchTerms = [];
             var item;
             var numwords = 0;
@@ -268,18 +275,13 @@ function getKeywords(title, callback) {
                 }
                 if (numwords == 3)
                     break;
-                // searchTerms.push(json.entities[item]['name']);
             }
-            console.log(searchTerms);
-
-            var term = searchTerms.join(' ');
-            console.log("Term: "+term);  
-
+ 
+            var term = searchTerms.join(' '); 
             var endpoint = 'http://webhose.io/search?token=' + WebhoseAPIKey + '&format=json&q=' + encodeURIComponent(term) + '%20language%3A(english)%20performance_score%3A%3E1%20(site_type%3Anews)&sort=relevancy';
-            console.log(endpoint)
-
+            
+            // This callback here is httpGetFiveArticlesFromSearchTerms(), called on line 311
             callback(endpoint);
-                
         }
     }
     var data = JSON.stringify({
@@ -292,43 +294,47 @@ function getKeywords(title, callback) {
     );
     xhr.send(data);
 }
-
-
-
+ 
+ 
 // Basic HTTPGetAsyncMethod
+// Send a request to Webhose to obtain the title from the current article we're on
+// Once we obtain the title, we send it to getKeywords(), and then pass those key words to obtain five articles 
 function httpGetArticleTitle(theUrl, callback)
 {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
+    xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
-			jsonResponse = JSON.parse(xmlHttp.responseText);
-			title = jsonResponse['posts'][0]['thread']['title'];
-			callback(title, httpGetFiveArticlesFromSearchTerms);
-		}
+            jsonResponse = JSON.parse(xmlHttp.responseText);
+            if (Object.keys(jsonResponse['posts']).length!=0)  
+              title = jsonResponse['posts'][0]['thread']['title'];
+            else title = "xxx xxxx xxxx xxx xxx xxxooo";
+            callback(title, httpGetFiveArticlesFromSearchTerms);         
+        }
     };
-    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
     xmlHttp.send();
 }
+ 
 
+// Send a request to Webhose to obtain five alternative sources from current article keywords
 function httpGetFiveArticlesFromSearchTerms(theUrl){
-	var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
-			jsonResponse = JSON.parse(xmlHttp.responseText);
+            jsonResponse = JSON.parse(xmlHttp.responseText);
             var array = jsonResponse.posts;
-            var i, seenBiases={}, articles={};
-            var imageArray = [], siteNameArray = [],  linkArray = [];
+            var i, seenBiases={};
+            var imageArray = [], siteNameArray = [],  linkArray = [], objectArray=[];
             for (i=0; i<array.length; i++)      {
-
+ 
                 var site = array[i].thread.site;
                 if (site in json)   {
-
+ 
                     var bias = json[site];
                     if (bias in seenBiases)  continue;
                     else    {
-
-                        seenBiases[bias]=1;
-                        articles[bias]=array[i];
+ 
+                        seenBiases[bias]=array[i];
                         imageArray.push(array[i]['thread']['main_image']); // adds the image
                         siteNameArray.push(array[i]['thread']['site']); // adds the site name
                         linkArray.push(array[i]['url']) // adds the link
@@ -338,43 +344,35 @@ function httpGetFiveArticlesFromSearchTerms(theUrl){
                 else continue;
             }
             // Logic for selecting 5 articles
-            // We will have a json object of lots of different articles
-            console.log("RESULTS FROM SEARCH TERM:")
-            //console.log(jsonResponse);
-            //console.log(i);
-            for (var c=0; c<imageArray.length; c++)   {
+            // We will have a json object with lots of different articles
+            for (var c=0; c<imageArray.length; c++) {
 
-                console.log(c+": "+imageArray[c]+" "+siteNameArray[c]+" "+linkArray[c]);
+                var object = {"image":imageArray[c], "sitename":siteNameArray[c], "link":linkArray[c], "bias":Object.keys(seenBiases)[c]};
+                objectArray.push(object);
             }
-			
-			// Sends the information to the Chrome Extension Pop Up (when you click icon next to search bar)
-			modifyPopUp(imageArray, siteNameArray, linkArray);
-		}
+           
+            // Pass the resulting object to a function that sends it to frontend
+            modifyPopUp(objectArray);
+        }
     };
-    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous
     xmlHttp.send();
 }
-
-// SUPER JANKY AND NEEDS A PERMANENT SOLUTION BECAUSE ONLY WORKS IF THE POP UP WINDOW IS OPEN WHEN API REQUEST IS SENT
-// NEED TO FIND A WAY FOR A SCRIPT ON THIS PAGE TO TALK WITH SCRIPT ON POP UP PAGE.
-// IDEALLY THESE THINGS WOULD BE FILES ON AN ACTUAL HOSTED SERVER AND WOULD JUST PUSH UPDATES TO THE BROSWER
-//
-// Sends a message to the linksPopUp.js script attached to the Chrome Extension Pop Up
-// Sends an array of 5 images, 5 links, and 5 site names
-//
-function modifyPopUp(arrayOfSiteImages, arrayOfSiteNames, arrayOfLinks) {
+ 
+// Once we've got the object containing our alternative sources, we notify the frontend - linksPopUp.js
+function modifyPopUp(arrayOfObjects) {
   chrome.runtime.sendMessage({
   from:    'sample',
   subject: 'changeInfo',
-  imageArray: arrayOfSiteImages,
-  siteNameArray: arrayOfSiteNames,
-  linkArray: arrayOfLinks
+  objArray: arrayOfObjects
 });
 }
+ 
 
+// Helper function
 function unshorten_url(url, callback) {
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
+    xmlHttp.onreadystatechange = function() {
         if (xmlHttp.readyState === 4 && xmlHttp.status === 200){
             jsonResponse = JSON.parse(xmlHttp.responseText);
             if (jsonResponse.status_code == 301) {
@@ -388,7 +386,7 @@ function unshorten_url(url, callback) {
             }
         }
     };
-    xmlHttp.open("GET", url, true); // true for asynchronous 
+    xmlHttp.open("GET", url, true); // true for asynchronous
     xmlHttp.send();
 }
 

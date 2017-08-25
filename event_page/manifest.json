@@ -6,7 +6,7 @@
     "default_icon": "icon.png",
     "default_popup": "LinksPopUp.html"
   },
-  "permissions": ["contextMenus"],
+  "permissions": ["tabs", "webNavigation", "history", "activeTab"],
   "background": {
     "persistent": false,
     "scripts": ["sample.js"]

@@ -4,54 +4,52 @@
 <meta charset="utf-8">
 <title>LinksPopUp</title>
 <link href="linksPopUpCSS.css" rel="stylesheet" type="text/css">
+<script src="jquery-3.2.0.js"></script> 
 <script src="linksPopUp.js"></script> 
 </head>
 
 <body>
 	<div id="linksContainer">
-		<div class="link" id="left">
-			<a href="#">
+		<div id="loading">
 				<div>
-					<img src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+					<img id="loadingimg" src="loading.gif" height="100px" width="140px">
 				</div>
-				<p>Link1</p>
-			</a>
+			<p id="explanation">Loading alternative sources...</p>
+		</div>
+
+		<div class="link" id="left">
+				<div>
+					<img id="leftimg" src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+				</div>
+				<p id="leftsite">Link1</p>
 			<p>Left</p>
 		</div>
-		<div class="link" id="leftcenter">
-			<a href="#">
+		<div class="link" id="leftl">
 				<div>
-					<img src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+					<img id="leftlimg" src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
 				</div>
-				<p>Link2</p>
-			</a>
+				<p id="leftlsite">Link2</p>
 			<p>Left-Center</p>
 		</div>
-		<div class="link" id="neutral">
-			<a href="#">
+		<div class="link" id="center">
 				<div>
-					<img src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+					<img id="centerimg" src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
 				</div>
-				<p>Link3</p>
-			</a>
-			<p>Neutral</p>
+				<p id="centersite">Link3</p>
+			<p>Center</p>
 		</div>
-		<div class="link" id="right">
-			<a href="#">
+		<div class="link" id="rightl">
 				<div>
-					<img src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+					<img id="rightlimg" src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
 				</div>
-				<p>Link4</p>
-			</a>
+				<p id="rightlsite">Link4</p>
 			<p>Right-Center</p>
 		</div>
-		<div class="link" id="rightcenter">
-			<a href="#">
+		<div class="link" id="right">
 				<div>
-					<img src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
+					<img id="rightimg" src="https://uos.edu.pk/assets/backend/images/staff/imagenotfound.svg" height="100px" width="100px">
 				</div>
-				<p>Link5</p>
-			</a>
+				<p id="rightsite">Link5</p>
 			<p>Right</p>
 		</div>
 	</div>
